@@ -69,6 +69,7 @@ local function setup_keymaps(bufnr)
       vim.api.nvim_win_set_cursor(0, { line + 1, col })
       local cl, cc = unpack(vim.api.nvim_win_get_cursor(0))
       highlight.set_cursor_char(bufnr, cl - 1, cc)
+      highlight.update_word_highlights(bufnr, cl - 1, cc)
     end
   end
 
@@ -97,6 +98,7 @@ local function setup_keymaps(bufnr)
       vim.api.nvim_win_set_cursor(0, { line + 1, col })
     end
     highlight.set_cursor_char(bufnr, line, col)
+    highlight.update_word_highlights(bufnr, line, col)
   end, bufnr)
 
   -- Enter: only advance when at end of line (col == #current_line)
@@ -115,6 +117,7 @@ local function setup_keymaps(bufnr)
       vim.api.nvim_win_set_cursor(0, { line + 1, col })
     end
     highlight.set_cursor_char(bufnr, line, col)
+    highlight.update_word_highlights(bufnr, line, col)
   end, bufnr)
 
   -- Esc exits
@@ -190,6 +193,7 @@ function M.activate()
   -- Highlight the first char to type
   local start_line, start_col = unpack(vim.api.nvim_win_get_cursor(0))
   highlight.set_cursor_char(bufnr, start_line - 1, start_col)
+  highlight.update_word_highlights(bufnr, start_line - 1, start_col)
 
   -- Force stay in insert mode when anything moves us to normal/visual/etc.
   local aid = vim.api.nvim_create_autocmd("ModeChanged", {

@@ -2,6 +2,7 @@
 local M = {}
 local ns        = vim.api.nvim_create_namespace('buftype')
 local ns_cursor = vim.api.nvim_create_namespace('buftype_cursor')
+local ns_words  = vim.api.nvim_create_namespace('buftype_words')
 
 function M.setup_highlights()
   -- Lighter gray than Comment — clearly dimmed but still readable
@@ -9,6 +10,80 @@ function M.setup_highlights()
   vim.cmd([[highlight default BufTypeError guifg=#ffff00 guibg=#ff0000 gui=bold,undercurl guisp=#ffff00 ctermfg=15 ctermbg=203]])
   vim.cmd([[highlight default link BufTypeDone  NONE]])
   vim.cmd([[highlight default BufTypeCursor guifg=#000000 guibg=#e5c07b ctermfg=0 ctermbg=214]])
+  -- Current word: dimmed orange. Next word: bright orange.
+  vim.cmd([[highlight default BufTypeCurrentWord guifg=#a05a2c ctermfg=130]])
+  vim.cmd([[highlight default BufTypeNextWord    guifg=#ff8c00 ctermfg=208]])
+end
+
+local function find_words(line_text)
+  local words = {}
+  local i = 1
+  while i <= #line_text do
+    local s = line_text:find('%S', i)
+    if not s then break end
+    local e = line_text:find('%s', s) or (#line_text + 1)
+    table.insert(words, { s = s - 1, e = e - 1 })
+    i = e
+  end
+  return words
+end
+
+-- Highlight current word (containing or just after the cursor) in dim orange,
+-- and the following word in bright orange.
+function M.update_word_highlights(bufnr, line, col)
+  vim.api.nvim_buf_clear_namespace(bufnr, ns_words, 0, -1)
+  local total = vim.api.nvim_buf_line_count(bufnr)
+
+  local current, next_word
+
+  -- Look starting from current line
+  local l = line
+  while l < total and not current do
+    local text = vim.api.nvim_buf_get_lines(bufnr, l, l + 1, false)[1] or ""
+    local ws = find_words(text)
+    for i, w in ipairs(ws) do
+      local start_col = (l == line) and col or 0
+      if w.e > start_col then
+        current = { line = l, s = math.max(w.s, start_col), e = w.e }
+        if ws[i + 1] then
+          next_word = { line = l, s = ws[i + 1].s, e = ws[i + 1].e }
+        end
+        break
+      end
+    end
+    l = l + 1
+  end
+
+  -- If next_word still missing, search subsequent lines
+  if current and not next_word then
+    local ll = current.line + 1
+    while ll < total do
+      local text = vim.api.nvim_buf_get_lines(bufnr, ll, ll + 1, false)[1] or ""
+      local ws = find_words(text)
+      if #ws > 0 then
+        next_word = { line = ll, s = ws[1].s, e = ws[1].e }
+        break
+      end
+      ll = ll + 1
+    end
+  end
+
+  if current then
+    vim.api.nvim_buf_set_extmark(bufnr, ns_words, current.line, current.s, {
+      end_col  = current.e,
+      hl_group = 'BufTypeCurrentWord',
+      hl_mode  = 'replace',
+      priority = 1100,
+    })
+  end
+  if next_word then
+    vim.api.nvim_buf_set_extmark(bufnr, ns_words, next_word.line, next_word.s, {
+      end_col  = next_word.e,
+      hl_group = 'BufTypeNextWord',
+      hl_mode  = 'replace',
+      priority = 1100,
+    })
+  end
 end
 
 function M.dim_all(bufnr)
@@ -99,6 +174,7 @@ end
 function M.clear_all(bufnr)
   vim.api.nvim_buf_clear_namespace(bufnr, ns,        0, -1)
   vim.api.nvim_buf_clear_namespace(bufnr, ns_cursor, 0, -1)
+  vim.api.nvim_buf_clear_namespace(bufnr, ns_words,  0, -1)
 end
 
 return M
