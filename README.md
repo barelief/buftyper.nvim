@@ -1,8 +1,8 @@
 # buftype.nvim
 
-A Neovim plugin for typing practice that dims buffer text and tracks your WPM and accuracy as you type.
+A Neovim plugin for typing practice that dims buffer text, reveals syntax highlighting as you type, and tracks your WPM and accuracy in real time.
 
-<img width="1280" height="720" alt="buftype_720p_stretched" src="https://github.com/user-attachments/assets/e072838e-a3e0-416e-ae94-a8f171afb66c" />
+<img width="1440" height="810" alt="buftype_code_2" src="https://github.com/user-attachments/assets/e7ad01e4-7846-4bb9-a3b6-f1a2051d26a7" />
 
 ## ✨ Features
 
@@ -11,6 +11,10 @@ A Neovim plugin for typing practice that dims buffer text and tracks your WPM an
 - **Accuracy tracking**: Percentage of correct keystrokes
 - **Lualine integration**: Shows WPM in statusline when active
 - **Visual feedback**: Yellow cursor marker, red error highlights for incorrect keys
+
+Highlight current word dim orange and next word bright orange
+
+<img width="1440" height="810" alt="buftype_description" src="https://github.com/user-attachments/assets/43cdf143-aee0-4f6c-b701-277105ffbeb4" />
 
 ## Installation
 
