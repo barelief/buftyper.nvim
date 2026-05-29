@@ -1,8 +1,8 @@
--- buftype/init.lua
+-- buftyper/init.lua
 local M = {}
 
-local config  = require('buftype.config')
-local session = require('buftype.session')
+local config  = require('buftyper.config')
+local session = require('buftyper.session')
 
 local mode_labels = {
   n  = { 'NORMAL',   'Statement' },
@@ -16,7 +16,7 @@ local mode_labels = {
 }
 
 local function update_mode_indicator()
-  if session.is_active() then return end  -- BufType sets its own statusline
+  if session.is_active() then return end  -- BufTyper sets its own statusline
   local m    = vim.fn.mode()
   local info = mode_labels[m] or { m:upper(), 'Normal' }
   vim.wo.statusline = string.format('%%#%s#  %s  %%* %%f %%=%%l:%%c', info[2], info[1])

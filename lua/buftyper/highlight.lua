@@ -1,18 +1,18 @@
--- buftype/highlight.lua
+-- buftyper/highlight.lua
 local M = {}
-local ns        = vim.api.nvim_create_namespace('buftype')
-local ns_cursor = vim.api.nvim_create_namespace('buftype_cursor')
-local ns_words  = vim.api.nvim_create_namespace('buftype_words')
+local ns        = vim.api.nvim_create_namespace('buftyper')
+local ns_cursor = vim.api.nvim_create_namespace('buftyper_cursor')
+local ns_words  = vim.api.nvim_create_namespace('buftyper_words')
 
 function M.setup_highlights()
   -- Lighter gray than Comment — clearly dimmed but still readable
-  vim.cmd([[highlight default BufTypeDim   guifg=#888888 ctermfg=102]])
-  vim.cmd([[highlight default BufTypeError guifg=#ffff00 guibg=#ff0000 gui=bold,undercurl guisp=#ffff00 ctermfg=15 ctermbg=203]])
-  vim.cmd([[highlight default link BufTypeDone  NONE]])
-  vim.cmd([[highlight default BufTypeCursor guifg=#000000 guibg=#e5c07b ctermfg=0 ctermbg=214]])
+  vim.cmd([[highlight default BufTyperDim   guifg=#888888 ctermfg=102]])
+  vim.cmd([[highlight default BufTyperError guifg=#ffff00 guibg=#ff0000 gui=bold,undercurl guisp=#ffff00 ctermfg=15 ctermbg=203]])
+  vim.cmd([[highlight default link BufTyperDone  NONE]])
+  vim.cmd([[highlight default BufTyperCursor guifg=#000000 guibg=#e5c07b ctermfg=0 ctermbg=214]])
   -- Current word: dimmed orange. Next word: bright orange.
-  vim.cmd([[highlight default BufTypeCurrentWord guifg=#a05a2c ctermfg=130]])
-  vim.cmd([[highlight default BufTypeNextWord    guifg=#ff8c00 ctermfg=208]])
+  vim.cmd([[highlight default BufTyperCurrentWord guifg=#a05a2c ctermfg=130]])
+  vim.cmd([[highlight default BufTyperNextWord    guifg=#ff8c00 ctermfg=208]])
 end
 
 local function find_words(line_text)
@@ -71,7 +71,7 @@ function M.update_word_highlights(bufnr, line, col)
   if current then
     vim.api.nvim_buf_set_extmark(bufnr, ns_words, current.line, current.s, {
       end_col  = current.e,
-      hl_group = 'BufTypeCurrentWord',
+      hl_group = 'BufTyperCurrentWord',
       hl_mode  = 'replace',
       priority = 1100,
     })
@@ -79,7 +79,7 @@ function M.update_word_highlights(bufnr, line, col)
   if next_word then
     vim.api.nvim_buf_set_extmark(bufnr, ns_words, next_word.line, next_word.s, {
       end_col  = next_word.e,
-      hl_group = 'BufTypeNextWord',
+      hl_group = 'BufTyperNextWord',
       hl_mode  = 'replace',
       priority = 1100,
     })
@@ -92,7 +92,7 @@ function M.dim_all(bufnr)
     for c = 0, #line - 1 do
       vim.api.nvim_buf_set_extmark(bufnr, ns, l - 1, c, {
         end_col  = c + 1,
-        hl_group = require('buftype.config').options.dim_hl,
+        hl_group = require('buftyper.config').options.dim_hl,
         hl_mode  = 'replace',
         priority = 1000,
       })
@@ -109,7 +109,7 @@ function M.dim_char(bufnr, line, col)
   end
   vim.api.nvim_buf_set_extmark(bufnr, ns, line, col, {
     end_col  = col + 1,
-    hl_group = require('buftype.config').options.dim_hl,
+    hl_group = require('buftyper.config').options.dim_hl,
     hl_mode  = 'replace',
     priority = 1000,
   })
@@ -133,7 +133,7 @@ function M.error_char(bufnr, line, col)
   end
   vim.api.nvim_buf_set_extmark(bufnr, ns, line, col, {
     end_col  = col + 1,
-    hl_group = require('buftype.config').options.error_hl,
+    hl_group = require('buftyper.config').options.error_hl,
     hl_mode  = 'replace',
     priority = 1200,
   })
@@ -145,14 +145,14 @@ function M.set_cursor_char(bufnr, line, col)
   local line_text = vim.api.nvim_buf_get_lines(bufnr, line, line + 1, false)[1] or ""
   if col >= #line_text then
     vim.api.nvim_buf_set_extmark(bufnr, ns_cursor, line, math.max(col - 1, 0), {
-      virt_text     = { { ' ↵', 'BufTypeCursor' } },
+      virt_text     = { { ' ↵', 'BufTyperCursor' } },
       virt_text_pos = 'eol',
     })
     return
   end
   vim.api.nvim_buf_set_extmark(bufnr, ns_cursor, line, col, {
     end_col  = col + 1,
-    hl_group = 'BufTypeCursor',
+    hl_group = 'BufTyperCursor',
     hl_mode  = 'replace',
     priority = 1300,
   })
@@ -165,7 +165,7 @@ function M.set_error_cursor(bufnr, line, col)
   if col >= #line_text then return end
   vim.api.nvim_buf_set_extmark(bufnr, ns_cursor, line, col, {
     end_col  = col + 1,
-    hl_group = require('buftype.config').options.error_hl,
+    hl_group = require('buftyper.config').options.error_hl,
     hl_mode  = 'replace',
     priority = 1300,
   })

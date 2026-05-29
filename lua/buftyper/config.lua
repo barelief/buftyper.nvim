@@ -1,10 +1,10 @@
--- buftype/config.lua
+-- buftyper/config.lua
 local M = {}
 
 M.options = {
-  dim_hl             = "BufTypeDim",
-  error_hl           = "BufTypeError",
-  done_hl            = "BufTypeDone",
+  dim_hl             = "BufTyperDim",
+  error_hl           = "BufTyperError",
+  done_hl            = "BufTyperDone",
   show_wpm           = true,
   show_mode_indicator = false,  -- set true if you don't use lualine
 }

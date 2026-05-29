@@ -1,4 +1,4 @@
-# buftype.nvim
+# buftyper.nvim
 
 A Neovim plugin for typing practice that dims buffer text, reveals syntax highlighting as you type, and tracks your WPM and accuracy in real time.
 
@@ -22,9 +22,9 @@ Highlight current word dim orange and next word bright orange
 
 ```lua
 {
-  'barelief/buftype.nvim',
+  'barelief/buftyper.nvim',
   config = function()
-    require('buftype').setup({
+    require('buftyper').setup({
       show_wpm = true,
       show_mode_indicator = false,
     })
@@ -36,18 +36,18 @@ Highlight current word dim orange and next word bright orange
 
 ```lua
 use {
-  'barelief/buftype.nvim',
+  'barelief/buftyper.nvim',
   config = function()
-    require('buftype').setup()
+    require('buftyper').setup()
   end
 }
 ```
 
 ## Usage
 
-The plugin provides the `:BufType` command and a default keymap:
+The plugin provides the `:BufTyper` command and a default keymap:
 
-- `:BufType` or `<leader>uB` - Activate typing mode
+- `:BufTyper` or `<leader>uB` - Activate typing mode
 - `<Esc>` - Exit typing mode and show session summary
 
 <img width="440" height="75" alt="image" src="https://github.com/user-attachments/assets/d1b29af8-c2d4-4aed-87d5-19ab8acafaf4" />
@@ -55,10 +55,10 @@ The plugin provides the `:BufType` command and a default keymap:
 ## Configuration
 
 ```lua
-require('buftype').setup({
-  dim_hl = "BufTypeDim",           -- Highlight group for dimmed text
-  error_hl = "BufTypeError",       -- Highlight group for errors
-  done_hl = "BufTypeDone",         -- Highlight group for completed text
+require('buftyper').setup({
+  dim_hl = "BufTyperDim",           -- Highlight group for dimmed text
+  error_hl = "BufTyperError",       -- Highlight group for errors
+  done_hl = "BufTyperDone",         -- Highlight group for completed text
   show_wpm = true,                 -- Show WPM in lualine
   show_mode_indicator = false,     -- Set true if you don't use lualine
 })

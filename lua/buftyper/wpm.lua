@@ -1,4 +1,4 @@
--- buftype/wpm.lua
+-- buftyper/wpm.lua
 -- Live display: rolling LIVE_WINDOW_SECS average. Strokes age out of the window,
 -- so the value decays naturally toward 0 over ~LIVE_WINDOW_SECS when you stop typing.
 -- Summary: cumulative average over active typing time (idle gaps >IDLE_GAP_SECS excluded)
@@ -96,6 +96,12 @@ function M.value()
   return math.floor((correct_in_window / 5) / (window / 60) + 0.5)
 end
 
+function M.live_accuracy()
+  local total = correct_chars + incorrect_chars
+  if total == 0 then return nil end
+  return math.floor(correct_chars / total * 100 + 0.5)
+end
+
 function M.summary()
   local total_secs = session_start_hr and ((now() - session_start_hr) / 1e9) or 0
   local active_secs = active_ns / 1e9
@@ -119,8 +125,8 @@ function M.summary()
 end
 
 function M.update()
-  if not require('buftype.session').is_active() then return end
-  if not require('buftype.config').options.show_wpm then return end
+  if not require('buftyper.session').is_active() then return end
+  if not require('buftyper.config').options.show_wpm then return end
   local ok, lualine = pcall(require, 'lualine')
   if ok then pcall(lualine.refresh) end
 end

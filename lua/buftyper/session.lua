@@ -1,7 +1,7 @@
--- buftype/session.lua
-local config = require("buftype.config")
-local highlight = require("buftype.highlight")
-local wpm = require("buftype.wpm")
+-- buftyper/session.lua
+local config = require("buftyper.config")
+local highlight = require("buftyper.highlight")
+local wpm = require("buftyper.wpm")
 
 local M = {}
 
@@ -151,8 +151,12 @@ local function lualine_patch(session_st)
   -- Add WPM component to the right side
   patched.sections.lualine_z = patched.sections.lualine_z or {}
   table.insert(patched.sections.lualine_z, 1, function()
-    local v = require("buftype.wpm").value()
-    return v and ("⌨ " .. tostring(v) .. " WPM") or "⌨ —"
+    local w = require("buftyper.wpm")
+    local v = w.value()
+    local wpm_str = v and ("⌨ " .. tostring(v) .. " WPM") or "⌨ —"
+    local acc = type(w.live_accuracy) == "function" and w.live_accuracy() or nil
+    local acc_str = acc and (" · " .. tostring(acc) .. "%%") or ""
+    return wpm_str .. acc_str
   end)
 
   lualine.setup(patched)
