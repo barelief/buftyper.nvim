@@ -59,7 +59,9 @@ The plugin provides the `:BufTyper` command and a default keymap:
 
 Select any text in visual mode and hit `<leader>uB` to practice just that snippet. The rest of the buffer fades into the background so you can focus on the selected lines, and the session ends automatically the moment you finish typing them. Works in both light and dark themes.
 
-<img width="1440" height="810" alt="buftype_selection" src="https://github.com/user-attachments/assets/5c972d7c-ab5a-44b9-8f49-489acaefa46a" />## Configuration
+<img width="1440" height="810" alt="buftype_selection" src="https://github.com/user-attachments/assets/5c972d7c-ab5a-44b9-8f49-489acaefa46a" />
+
+## Configuration
 
 ```lua
 require('buftyper').setup({
