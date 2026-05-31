@@ -3,16 +3,37 @@ local M = {}
 local ns        = vim.api.nvim_create_namespace('buftyper')
 local ns_cursor = vim.api.nvim_create_namespace('buftyper_cursor')
 local ns_words  = vim.api.nvim_create_namespace('buftyper_words')
+local ns_faint  = vim.api.nvim_create_namespace('buftyper_faint')
 
 function M.setup_highlights()
-  -- Lighter gray than Comment — clearly dimmed but still readable
-  vim.cmd([[highlight default BufTyperDim   guifg=#888888 ctermfg=102]])
-  vim.cmd([[highlight default BufTyperError guifg=#ffff00 guibg=#ff0000 gui=bold,undercurl guisp=#ffff00 ctermfg=15 ctermbg=203]])
-  vim.cmd([[highlight default link BufTyperDone  NONE]])
-  vim.cmd([[highlight default BufTyperCursor guifg=#000000 guibg=#e5c07b ctermfg=0 ctermbg=214]])
-  -- Current word: dimmed orange. Next word: bright orange.
-  vim.cmd([[highlight default BufTyperCurrentWord guifg=#a05a2c ctermfg=130]])
-  vim.cmd([[highlight default BufTyperNextWord    guifg=#ff8c00 ctermfg=208]])
+  local light = vim.o.background == 'light'
+
+  -- "Dim" = the to-type target: muted but readable on either background.
+  -- "Faint" = text outside the selection: barely visible, must fade *toward*
+  -- the background, so it differs per light/dark.
+  -- Word hints: current word = muted orange, next word = vivid orange.
+  local c = light
+    and {
+      dim     = { gui = '#777777', cterm = 243 },
+      faint   = { gui = '#cfcfcf', cterm = 251 }, -- near-white, fades into light bg
+      curword = { gui = '#c2410c', cterm = 166 }, -- burnt orange, readable on white
+      nxtword = { gui = '#ea580c', cterm = 202 }, -- vivid orange
+    }
+    or {
+      dim     = { gui = '#888888', cterm = 102 },
+      faint   = { gui = '#333333', cterm = 236 }, -- near-black, fades into dark bg
+      curword = { gui = '#a05a2c', cterm = 130 },
+      nxtword = { gui = '#ff8c00', cterm = 208 },
+    }
+
+  vim.cmd(('highlight BufTyperDim         guifg=%s ctermfg=%d'):format(c.dim.gui, c.dim.cterm))
+  vim.cmd(('highlight BufTyperFaint       guifg=%s ctermfg=%d'):format(c.faint.gui, c.faint.cterm))
+  vim.cmd(('highlight BufTyperCurrentWord guifg=%s ctermfg=%d'):format(c.curword.gui, c.curword.cterm))
+  vim.cmd(('highlight BufTyperNextWord    guifg=%s ctermfg=%d'):format(c.nxtword.gui, c.nxtword.cterm))
+
+  vim.cmd([[highlight BufTyperError guifg=#ffff00 guibg=#ff0000 gui=bold,undercurl guisp=#ffff00 ctermfg=15 ctermbg=203]])
+  vim.cmd([[highlight default link BufTyperDone NONE]])
+  vim.cmd([[highlight BufTyperCursor guifg=#000000 guibg=#e5c07b ctermfg=0 ctermbg=214]])
 end
 
 local function find_words(line_text)
@@ -100,6 +121,56 @@ function M.dim_all(bufnr)
   end
 end
 
+function M.dim_range(bufnr, start_line, start_col, end_line, end_col)
+  for l = start_line, end_line do
+    local line_text = vim.api.nvim_buf_get_lines(bufnr, l, l + 1, false)[1] or ""
+    local len = #line_text
+    if len > 0 then
+      local start_c = math.max((l == start_line) and start_col or 0, 0)
+      local end_c = (l == end_line) and end_col or (len - 1)
+      end_c = math.min(end_c, len - 1) -- clamp; empty/short lines & EOL selections
+      for c = start_c, end_c do
+        vim.api.nvim_buf_set_extmark(bufnr, ns, l, c, {
+          end_col  = c + 1,
+          hl_group = require('buftyper.config').options.dim_hl,
+          hl_mode  = 'replace',
+          priority = 1000,
+        })
+      end
+    end
+  end
+end
+
+-- Faintly dim everything OUTSIDE the selection so the selected text stands out.
+function M.faint_outside_range(bufnr, start_line, start_col, end_line, end_col)
+  local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
+  for l = 0, #lines - 1 do
+    local line_text = lines[l + 1]
+    local len = #line_text
+    -- Determine which columns on this line are OUTSIDE [start, end] (inclusive).
+    local function faint_span(from_c, to_c) -- 0-based, [from_c, to_c)
+      for c = from_c, to_c - 1 do
+        vim.api.nvim_buf_set_extmark(bufnr, ns_faint, l, c, {
+          end_col  = c + 1,
+          hl_group = 'BufTyperFaint',
+          hl_mode  = 'replace',
+          priority = 1000,
+        })
+      end
+    end
+    if l < start_line or l > end_line then
+      faint_span(0, len)
+    else
+      if l == start_line then
+        faint_span(0, math.min(start_col, len))
+      end
+      if l == end_line then
+        faint_span(math.min(end_col + 1, len), len)
+      end
+    end
+  end
+end
+
 function M.dim_char(bufnr, line, col)
   local line_text = vim.api.nvim_buf_get_lines(bufnr, line, line + 1, false)[1] or ""
   if col >= #line_text then return end
@@ -175,6 +246,7 @@ function M.clear_all(bufnr)
   vim.api.nvim_buf_clear_namespace(bufnr, ns,        0, -1)
   vim.api.nvim_buf_clear_namespace(bufnr, ns_cursor, 0, -1)
   vim.api.nvim_buf_clear_namespace(bufnr, ns_words,  0, -1)
+  vim.api.nvim_buf_clear_namespace(bufnr, ns_faint,  0, -1)
 end
 
 return M

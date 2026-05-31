@@ -32,8 +32,8 @@ function M.setup(opts)
   end
 end
 
-function M.activate()
-  session.activate()
+function M.activate(opts)
+  session.activate(opts)
 end
 
 return M

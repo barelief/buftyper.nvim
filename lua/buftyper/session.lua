@@ -67,6 +67,16 @@ local function setup_keymaps(bufnr)
       -- Always advance
       col = col + 1
       vim.api.nvim_win_set_cursor(0, { line + 1, col })
+
+      -- Check if we've gone past the selection range
+      if session_state and session_state.range then
+        local r = session_state.range
+        if line > r.end_line or (line == r.end_line and col > r.end_col) then
+          M.deactivate()
+          return
+        end
+      end
+
       local cl, cc = unpack(vim.api.nvim_win_get_cursor(0))
       highlight.set_cursor_char(bufnr, cl - 1, cc)
       highlight.update_word_highlights(bufnr, cl - 1, cc)
@@ -87,6 +97,10 @@ local function setup_keymaps(bufnr)
     local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
     local line, col = unpack(vim.api.nvim_win_get_cursor(0))
     line = line - 1
+    -- Don't go before the selection start
+    if session_state.range and line == session_state.range.start_line and col == session_state.range.start_col then
+      return
+    end
     if col > 0 then
       col = col - 1
       highlight.dim_char(bufnr, line, col)
@@ -110,6 +124,10 @@ local function setup_keymaps(bufnr)
     local line, col = unpack(vim.api.nvim_win_get_cursor(0))
     line = line - 1
     local target_line = lines[line + 1] or ""
+    -- Don't advance past the selection end line
+    if session_state.range and line >= session_state.range.end_line then
+      return
+    end
     if col >= #target_line and line + 1 < #lines then
       wpm.inc_correct()
       line = line + 1
@@ -180,17 +198,37 @@ function M.is_active()
   return session_state ~= nil
 end
 
-function M.activate()
+function M.activate(opts)
   local bufnr = vim.api.nvim_get_current_buf()
   if session_state then
     return
   end
   session_state = save_state(bufnr)
 
+  opts = opts or {}
+  local range = nil
+  if opts.start_line ~= nil then
+    range = {
+      start_line = opts.start_line,
+      start_col  = opts.start_col,
+      end_line   = opts.end_line,
+      end_col    = opts.end_col,
+    }
+    session_state.range = range
+  end
+
   vim.wo.wrap = true
   vim.bo[bufnr].modifiable = false
   highlight.setup_highlights()
-  highlight.dim_all(bufnr)
+
+  if range then
+    highlight.dim_range(bufnr, range.start_line, range.start_col, range.end_line, range.end_col)
+    highlight.faint_outside_range(bufnr, range.start_line, range.start_col, range.end_line, range.end_col)
+    vim.api.nvim_win_set_cursor(0, { range.start_line + 1, range.start_col })
+  else
+    highlight.dim_all(bufnr)
+  end
+
   wpm.start()
   setup_keymaps(bufnr)
 
