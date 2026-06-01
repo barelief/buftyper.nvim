@@ -89,6 +89,9 @@ local function setup_keymaps(bufnr)
     add_keymap("i", k, handle_char(k), bufnr)
   end
 
+  -- Tab: reveal/advance over a tab character, just like a normal char
+  add_keymap("i", "<Tab>", handle_char("\t"), bufnr)
+
   -- Backspace
   add_keymap("i", "<BS>", function()
     if not session_state then

@@ -221,6 +221,19 @@ function M.set_cursor_char(bufnr, line, col)
     })
     return
   end
+  -- Tab cell renders as blank whitespace; overlay a visible glyph, like the
+  -- ↵ end-of-line indicator, so the typist can see a tab is expected.
+  if line_text:sub(col + 1, col + 1) == '\t' then
+    vim.api.nvim_buf_set_extmark(bufnr, ns_cursor, line, col, {
+      end_col       = col + 1,
+      hl_group      = 'BufTyperCursor',
+      hl_mode       = 'replace',
+      priority      = 1300,
+      virt_text     = { { '⇥', 'BufTyperCursor' } },
+      virt_text_pos = 'overlay',
+    })
+    return
+  end
   vim.api.nvim_buf_set_extmark(bufnr, ns_cursor, line, col, {
     end_col  = col + 1,
     hl_group = 'BufTyperCursor',
