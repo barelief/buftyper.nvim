@@ -1,3 +1,5 @@
+
+
 # buftyper.nvim
 
 A Neovim plugin for typing practice that dims buffer text, reveals syntax highlighting as you type, and tracks your WPM and accuracy in real time.
@@ -14,7 +16,7 @@ A Neovim plugin for typing practice that dims buffer text, reveals syntax highli
 - **Visual feedback**: Yellow cursor marker, red error highlights for incorrect keys
 - **Light & dark aware**: Dimming and word-hint colors adapt to your background
 
-Highlight current word dim orange and next word bright orange
+The current word is highlighted in dim orange and the next word in bright orange
 
 <img width="1440" height="810" alt="buftype_description" src="https://github.com/user-attachments/assets/43cdf143-aee0-4f6c-b701-277105ffbeb4" />
 
